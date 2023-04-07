@@ -1,0 +1,43 @@
+import sys
+import peppy
+import glob
+
+#configfile: "../../config/config.yaml"
+configfile: "config/config.yaml"
+
+REP_LIST = list(range(config.get("SALMON_REPLICATES",3)))
+config['LM_FEATURE_FILT'] = config.get("LM_FEATURE_FILT") if config.get("RUN_TYPE") != "test" else 'T'
+
+subworkflow wgs_wf:
+    workdir:
+        "../../tetf_dgrp_wgs/"
+    snakefile:
+        "../../tetf_dgrp_wgs/workflow/Snakefile"
+
+subworkflow refs_wf:
+    workdir:
+        "../../tetf_refs/"
+    snakefile:
+        "../../tetf_refs/workflow/Snakefile"
+
+subworkflow tidal_wf:
+    workdir:
+        "../../tetf_tidal/"
+    snakefile:
+        "../../tetf_tidal/workflow/Snakefile"
+
+subworkflow quant_wf:
+    workdir:
+        "../../tetf_expression_quant/"
+    snakefile:
+        "../../tetf_expression_quant/workflow/Snakefile"        
+
+include: "rules/linear_modeling.smk"
+
+rule all:
+    input:
+        expand("results/linear_models/{m}/{qr}/lm.tidy.corrected.tsv.gz",m=config.get("LM_MODELS_TO_FIT"),qr=REP_LIST),
+        expand("results/linear_models/{m}/{qr}/lm.{o}.tsv.gz",m=config.get("LM_MODELS_TO_FIT"),o=["glance","anova","breusch_pagan","rainbow"],qr=REP_LIST),
+        "results/linear_models/final-models.collected-info.tsv.gz"
+
+

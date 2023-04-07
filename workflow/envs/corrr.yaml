@@ -1,0 +1,10 @@
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - r-tidyverse
+  - r-vroom
+  - r-corrr=0.4.4
+  - r-desctools=0.99.47
+  - bioconductor-spqn=1.10.0

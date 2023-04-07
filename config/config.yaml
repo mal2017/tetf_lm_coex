@@ -1,0 +1,68 @@
+# export of expression to a tab sep matrix. Multiple export units/norms/transforms
+# are available. Also possible is normalization to estimated TE copy number,
+# which necessarily is performed prior to vst, fpkm, etc, quantile norm, etc.
+# 'INCL copy estimation in export' only controls whether this information is generated.
+# there will always be two exports for each export type, but if INCL_COPY_ESTIMATION_IN_EXPORT is
+# TRUE, the -""
+EXPORT_UNITS: ["vst","normcts","fpkm","edaseq_uq","ppc_qn","edaseq_qn"] # ["vst","counts","normcts","fpkm","abundance","cpm","uq","qn"]
+INCL_COPY_ESTIMATION_IN_EXPORT: TRUE
+
+SALMON_REPLICATES: 3
+
+# DESeq2 on salmon
+DESEQ2_LRT_FORMULA: ~ Strain + sex # not used right now
+DESEQ2_LRT_REDUCED_FORMULA: ~ 1 # not used right now
+DESEQ2_FITTYPE: local
+
+# --------------------basic linear model options -------------------------------
+# each entry in "LM_MODELS_TO_FIT" will be a named directory with the prescribed
+# linear model results
+# ------------------------------------------------------------------------------
+
+# number of chunks split genes into to process model fitting. can be up to 9999
+LM_CHUNKS: 5
+
+# an expression that returns a logical vector for selecting rows of matrix x
+LM_FEATURE_FILT: "(((!str_detect(rownames(x),'FBgn')) & rowSums(x > 1) > 10) | (rowSums(x > 10) > 100)) & rowSums(x == 0) < 0.3*ncol(x)"
+
+# set of model groups to fit
+# options:
+# LM_FIT_FOR_PIPELINE: vanilla_salmon_tes_transcripts is currently the only option
+# LM_FIT_FOR_FEATURE_LEVEL: "gene" or "transcript." Transcript option not tested.
+# LM_FIT_FOR_UNITS: one of EXPORT_UNITS above
+# LM_CNNORM: [per_feature, per_est_copy]. Normalize expression for estimated copies. This is applied to TEs only. Per_feature == no correction.
+# LM_MADS_FILTER: Datapoints > N MADs above the data center are removed.
+# LM_FORMULA: Covariate options include wolbachia, overlap, scaled.copies.y/x, est.copies.y/x, length.y/x, sex, age.
+# LM_ALT_FORMULA: Overlaps are sparse and often lead to singular values. Alternate formula can be used to exclude 'overlap' as cov.
+# LM_SEX: male, female, or both
+# LM_VARIABLE_TRANSFORM: for no transform just put 'x', or for countlike data something like log2(x+1). 
+#    If something like vst is used, this should be set to 'x'. This is applied before any scaling.
+# LM_VARIABLE_SCALE: if True, scale genes to have mean 0 and sd 1 - mostly important for regressing out variables
+# LM_CORRECT_N_PCS: number of pcs to correct for with WGCNA
+LM_MODELS_TO_FIT:
+  male:
+    LM_FIT_FOR_PIPELINE: vanilla_salmon_tes_transcripts
+    LM_FIT_FOR_FEATURE_LEVEL: "gene"
+    LM_FIT_FOR_UNITS: vst
+    LM_CNNORM: per_feature
+    LM_MADS_FILTER: 3
+    LM_FORMULA: y ~ wolbachia + overlap + scaled.copies.y + overlap.coex.gene + x
+    LM_ALT_FORMULA: y ~ wolbachia + scaled.copies.y + overlap.coex.gene + x
+    LM_SEX: male
+    LM_VARIABLE_TRANSFORM: x
+    LM_VARIABLE_SCALE: TRUE
+    LM_CORRECT_N_PCS: 4
+  female:
+    LM_FIT_FOR_PIPELINE: vanilla_salmon_tes_transcripts
+    LM_FIT_FOR_FEATURE_LEVEL: "gene"
+    LM_FIT_FOR_UNITS: vst
+    LM_CNNORM: per_feature
+    LM_MADS_FILTER: 3
+    LM_FORMULA: y ~ wolbachia + overlap + scaled.copies.y + overlap.coex.gene + x
+    LM_ALT_FORMULA: y ~ wolbachia + scaled.copies.y + overlap.coex.gene + x
+    LM_SEX: female
+    LM_VARIABLE_TRANSFORM: x
+    LM_VARIABLE_SCALE: TRUE
+    LM_CORRECT_N_PCS: 4
+
+LMS_TO_EXPORT: [male,female]
