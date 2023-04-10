@@ -38,6 +38,7 @@ rule all:
     input:
         expand("results/linear_models/{m}/{qr}/lm.tidy.corrected.tsv.gz",m=config.get("LM_MODELS_TO_FIT"),qr=REP_LIST),
         expand("results/linear_models/{m}/{qr}/lm.{o}.tsv.gz",m=config.get("LM_MODELS_TO_FIT"),o=["glance","anova","breusch_pagan","rainbow"],qr=REP_LIST),
-        "results/linear_models/final-models.collected-info.tsv.gz"
+        "results/linear_models/final-models.collected-info.tsv.gz",
+        expand("results/linear_models/{model_id}.confounded_pairs.tsv",model_id=config.get("LM_MODELS_TO_FIT")),
 
 

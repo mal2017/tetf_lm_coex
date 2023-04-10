@@ -85,6 +85,19 @@ rule gene_gene_edges:
     script:
         "../scripts/gene_gene_edges.R"
 
+rule confounded_pairs:
+    """
+    generates full list of gene/te pairs with fixed overlapping insertions
+    or  insertions in highly correlated genes
+    """
+    input:
+        edges = rules.gene_gene_edges.output.edges_rds,
+        fixed = tidal_wf("../tetf_tidal/results/overlaps/excluded_gene_te_pairs.tsv"),
+    output:
+        rds = "results/linear_models/{model_id}.confounded_pairs.tsv",
+    script:
+        "../scripts/confounded_pairs.R"
+
 rule scatter_genes_for_lm:
     """
     Note: Escape brackets on wcs when using in conjunction w/ scattergather.
