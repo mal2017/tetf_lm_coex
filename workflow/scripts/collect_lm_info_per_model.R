@@ -1,6 +1,14 @@
 library(tidyverse)
 
-#info_fls <- Sys.glob("data/linear_models/female_model_01/*/lm.collected-info.tsv.gz")
+#confounded_pairs_fls <- "results/linear_models/female.confounded_pairs.tsv"
+confounded_pairs_fls <- snakemake@input$confounded_pairs
+
+# don't want to duplicate rows in the filter
+confounded_pairs <- read_tsv(confounded_pairs_fls) %>%
+  group_by(x,y) %>%
+  summarise(overlap_filter_type = paste(sort(filter_type),collapse="+"), .groups = "drop")
+  
+#info_fls <- Sys.glob("results/linear_models/female/0/lm.collected-info.tsv.gz")
 info_fls <- snakemake@input[["info"]]
 
 info <- info_fls %>% map_df(read_tsv)
@@ -40,10 +48,13 @@ info <- info %>%
   mutate(adj_p.value_ftest_r2 = p.adjust(p.value_ftest_r2,method="BH")) %>%
   ungroup() %>%
   dplyr::select(-significant_model_0)
-    
+
+# add info about pairs with fully fixed overlaps
+info <- info %>% left_join(confounded_pairs, by=c(feature.x="x",feature.y="y"))
+
 info <- info %>%
   mutate(significant_model = adj_p.value_ftest_r2 < 0.1 & reproducible & valid) %>%
-  mutate(significant_x = adj_p.value_anova_x < 0.1 & significant_model)
+  mutate(significant_x = adj_p.value_anova_x < 0.1 & significant_model & is.na(overlap_filter_type))
 
 gene_universe <- read_tsv("http://ftp.flybase.net/releases/FB2022_04/precomputed_files/genes/fbgn_fbtr_fbpp_expanded_fb_2022_04.tsv.gz", skip = 4)
 

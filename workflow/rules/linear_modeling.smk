@@ -94,7 +94,7 @@ rule confounded_pairs:
         edges = rules.gene_gene_edges.output.edges_rds,
         fixed = tidal_wf("../tetf_tidal/results/overlaps/excluded_gene_te_pairs.tsv"),
     output:
-        rds = "results/linear_models/{model_id}.confounded_pairs.tsv",
+        tsv = "results/linear_models/{model_id}.confounded_pairs.tsv",
     script:
         "../scripts/confounded_pairs.R"
 
@@ -198,7 +198,8 @@ rule collect_lm_info_per_rep:
 
 rule collect_lm_info_per_model:
     input:
-        info = expand("results/linear_models/{{model_id}}/{r}/lm.collected-info.tsv.gz",r=REP_LIST)
+        info = expand("results/linear_models/{{model_id}}/{r}/lm.collected-info.tsv.gz",r=REP_LIST),
+        confounded_pairs = rules.confounded_pairs.output.tsv,
     output:
         tsv= "results/linear_models/{model_id}.collected-info.tsv.gz"
     conda:
