@@ -20,7 +20,7 @@ DESEQ2_FITTYPE: local
 # ------------------------------------------------------------------------------
 
 # number of chunks split genes into to process model fitting. can be up to 9999
-LM_CHUNKS: 5
+LM_CHUNKS: 250
 
 # an expression that returns a logical vector for selecting rows of matrix x
 LM_FEATURE_FILT: "(((!str_detect(rownames(x),'FBgn')) & rowSums(x > 1) > 10) | (rowSums(x > 10) > 100)) & rowSums(x == 0) < 0.3*ncol(x)"

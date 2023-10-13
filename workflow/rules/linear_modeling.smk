@@ -64,7 +64,7 @@ rule mean_gene_corr:
         test = False if config.get("RUN_TYPE","full") != "test" else True,
     resources:
         time=60,
-        mem=96000,
+        mem=128000,
         cpus=1
     script:
         "../scripts/mean_gene_corr.R"
