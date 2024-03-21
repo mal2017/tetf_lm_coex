@@ -70,7 +70,7 @@ pcs <- snakemake@params[["pcs"]]
 
 if (pcs > 0) {
   message(pcs)
-  x <- WGCNA::removePrincipalComponents(x, min(pcs,ncol(x)-1))
+  x <- t(WGCNA::removePrincipalComponents(t(x), min(pcs,ncol(x)-1)))
 }
 
 print(x[1:5,1:4])
